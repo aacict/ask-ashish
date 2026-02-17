@@ -1,0 +1,28 @@
+# Web Framework
+fastapi==0.109.0              # Modern, fast web framework for APIs
+uvicorn[standard]==0.27.0     # ASGI server to run FastAPI
+
+# Data Validation
+pydantic==2.5.0               # Data validation using Python type hints
+pydantic-settings==2.1.0      # Settings management with Pydantic
+
+# LangChain - RAG Framework
+langchain==0.1.0              # Framework for LLM applications
+langchain-openai==0.0.2       # OpenAI integration for LangChain
+langchain-community==0.0.10   # Community integrations
+
+# Vector Database
+chromadb==0.4.22              # Vector database for embeddings
+
+# Security
+python-jose[cryptography]==3.3.0  # JWT tokens
+passlib[bcrypt]==1.7.4        # Password hashing
+slowapi==0.1.9                # Rate limiting
+
+# Utilities
+redis==5.0.1                  # Redis client for rate limiting
+httpx==0.26.0                 # Async HTTP client
+python-dotenv==1.0.0          # Load environment variables
+tiktoken==0.5.2               # Token counting for OpenAI
+tenacity==8.2.3               # Retry logic
+python-multipart==0.0.6       # File upload support

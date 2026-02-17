@@ -1,9 +1,10 @@
 services:
   web:
     build:
-      context: ./app
+      context: src
+      dockerfile: Dockerfile
     ports:
-      - 3000:5000
+      - 5000:5000
     volumes:
-      - ./app:/app
+      - ./src:/app
     restart: unless-stopped
