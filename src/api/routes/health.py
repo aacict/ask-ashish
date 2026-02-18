@@ -7,10 +7,11 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.models.schemas import HealthResponse, MetricsResponse
-from app.config.settings import settings
-from app.core.rag.vector_store import get_vector_store_manager
-from app.core.security.auth import verify_api_key
+from src.models.schemas import HealthResponse
+from src.config.settings import get_settings
+from src.core.rag.vector_store import get_vector_store_manager
+from src.core.security.auth import verify_api_key
+settings = get_settings()
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +47,7 @@ async def health_check() -> HealthResponse:
     
     # Check OpenAI connectivity (simple check)
     try:
-        from app.core.llm.client import get_llm_client
+        from src.core.llm.client import get_llm_client
         llm_client = get_llm_client()
         checks["llm"] = llm_client.llm is not None
     except Exception as e:
@@ -109,37 +110,6 @@ async def readiness_probe() -> dict:
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Application not ready"
         )
-
-
-@router.get(
-    "/metrics",
-    response_model=MetricsResponse,
-    status_code=status.HTTP_200_OK,
-    summary="Application metrics",
-    description="Get basic application metrics"
-)
-async def get_metrics(
-    _: str = Depends(verify_api_key)
-) -> MetricsResponse:
-    """Get application metrics (requires API key)"""
-    try:
-        uptime = int(time.time() - _startup_time)
-        
-        # In a production app, you'd fetch these from a metrics backend
-        return MetricsResponse(
-            total_requests=0,  # TODO: Implement request counter
-            average_response_time=0.0,  # TODO: Implement response time tracking
-            error_rate=0.0,  # TODO: Implement error rate tracking
-            uptime_seconds=uptime
-        )
-        
-    except Exception as e:
-        logger.error(f"Error getting metrics: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to get metrics"
-        )
-
 
 @router.get(
     "/admin/vector-store/stats",

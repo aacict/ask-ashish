@@ -7,7 +7,7 @@ from typing import Optional
 from langchain_openai import ChatOpenAI
 from langchain.schema import HumanMessage, SystemMessage
 
-from app.config.settings import get_settings
+from src.config.settings import get_settings
 
 logger = logging.getLogger(__name__)
 settings = get_settings()

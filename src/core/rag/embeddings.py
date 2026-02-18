@@ -11,10 +11,10 @@ from tenacity import (
     retry_if_exception_type
 )
 
-from app.config.settings import settings
+from src.config.settings import get_settings
 
 logger = logging.getLogger(__name__)
-
+settings = get_settings()
 
 class EmbeddingsManager:
     """Manages embeddings generation with caching and retries"""

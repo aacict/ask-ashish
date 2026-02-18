@@ -81,3 +81,11 @@ class ErrorResponse(BaseModel):
     message: str = Field(..., description="Human-readable error message")
     detail: Optional[str] = None
     timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+class HealthResponse(BaseModel):
+    """Health check response"""
+    status: str
+    version: str
+    environment: str
+    checks: dict[str, bool] = Field(default_factory=dict)
+    timestamp: datetime = Field(default_factory=datetime.utcnow)

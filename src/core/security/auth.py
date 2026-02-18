@@ -60,17 +60,6 @@ def get_rate_limit_string() -> str:
     return f"{settings.rate_limit_per_minute}/minute"
 
 
-# CORS Headers
-def get_cors_headers() -> dict[str, str]:
-    """Get CORS headers"""
-    return {
-        "Access-Control-Allow-Origin": ", ".join(settings.allowed_origins),
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, X-API-Key, Authorization",
-        "Access-Control-Max-Age": "3600",
-    }
-
-
 # Security Headers
 def get_security_headers() -> dict[str, str]:
     """Get security headers"""
