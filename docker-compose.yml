@@ -1,10 +1,119 @@
 services:
-  web:
+  # Main API Service
+  api:
     build:
-      context: src
+      context: .
       dockerfile: Dockerfile
+    container_name: ask-ashish-api
     ports:
-      - 5000:5000
+      - "8000:8000"
+    environment:
+      # Application
+      APP_NAME: "Ask Ashish AI"
+      ENVIRONMENT: development
+      DEBUG: "true"
+      
+      # Security
+      SECRET_KEY: ${SECRET_KEY}
+      API_KEY: ${API_KEY:-}
+      
+      # OpenAI
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4-turbo-preview}
+      OPENAI_TEMPERATURE: ${OPENAI_TEMPERATURE:-0.7}
+      OPENAI_MAX_TOKENS: ${OPENAI_MAX_TOKENS:-1000}
+      
+      # Embeddings
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-text-embedding-3-small}
+      
+      # Vector Store
+      CHROMA_PERSIST_DIRECTORY: /src/data/chroma
+      CHROMA_COLLECTION_NAME: ashish_knowledge
+      
+      # RAG Configuration
+      CHUNK_SIZE: ${CHUNK_SIZE:-1000}
+      CHUNK_OVERLAP: ${CHUNK_OVERLAP:-200}
+      RETRIEVAL_TOP_K: ${RETRIEVAL_TOP_K:-4}
+      
+      # Rate Limiting
+      RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-10}
+      REDIS_URL: redis://redis:6379/0
+      
+      # CORS
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
+      
+      # Monitoring
+      ENABLE_METRICS: "true"
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    
     volumes:
-      - ./src:/app
+      # Persist vector store data
+      - chroma-data:/src/data/chroma
+      # Mount knowledge base (read-only)
+      - ./data/knowledge_base:/src/data/knowledge_base:ro
+      # Logs
+      - app-logs:/scr/logs
+    
+    depends_on:
+      redis:
+        condition: service_healthy
+    
+    networks:
+      - ask-ashish-network
+    
     restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Redis for rate limiting
+  redis:
+    image: redis:7-alpine
+    container_name: ask-ashish-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - ask-ashish-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+
+  ingest:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ask-ashish-ingest
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      CHROMA_PERSIST_DIRECTORY: /src/data/chroma
+    volumes:
+      - chroma-data:/src/data/chroma
+      - ./data/knowledge_base:/src/data/knowledge_base:ro
+    networks:
+      - ask-ashish-network
+    command: python scripts/ingest_data.py --data-dir /src/data/knowledge_base --verify
+    profiles:
+      - tools  # Only run when explicitly called
+
+volumes:
+  redis-data:
+    driver: local
+  chroma-data:
+    driver: local
+  app-logs:
+    driver: local
+
+networks:
+  ask-ashish-network:
+    driver: bridge
