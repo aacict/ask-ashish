@@ -9,6 +9,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
+from scripts import ingest_data
 from slowapi.errors import RateLimitExceeded
 
 from src.config.settings import get_settings
@@ -48,6 +49,13 @@ async def lifespan(app: FastAPI):
         vector_store = get_vector_store_manager()
         stats = await vector_store.get_collection_stats()
         logger.info(f"Vector store initialized: {stats.get('count', 0)} documents")
+
+        if stats.get("count", 0) == 0:
+            logger.info("Vector store empty. Starting ingestion...")
+            await ingest_data("data/knowledge_base")
+            logger.info("Ingestion complete.")
+        else:
+            logger.info(f"Vector store already initialized with {stats['count']} chunks.")
         
         llm_client = get_llm_client()
         logger.info(f"LLM client initialized: {settings.openai_model}")
