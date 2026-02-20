@@ -24,6 +24,9 @@ COPY src/ ./src/
 COPY scripts/ ./scripts/
 COPY data/ ./data/
 
+# After copying source code
+RUN python scripts/ingest_data.py --data-dir ./data/knowledge_base
+
 # Create non-root user
 RUN useradd -m -u 1000 appuser && \
     chown -R appuser:appuser /src
