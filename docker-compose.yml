@@ -1,6 +1,12 @@
+# Shared environment configuration
+x-common-env: &common-env
+  env_file:
+    - .env
+
 services:
   # Main API Service
   api:
+    <<: *common-env
     build:
       context: .
       dockerfile: Dockerfile
@@ -90,6 +96,7 @@ services:
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
 
   ingest:
+    <<: *common-env
     build:
       context: .
       dockerfile: Dockerfile
@@ -102,7 +109,7 @@ services:
       - ./data/knowledge_base:/src/data/knowledge_base:ro
     networks:
       - ask-ashish-network
-    command: python scripts/ingest_data.py --data-dir /src/data/knowledge_base --verify
+    command: python scripts/ingest_data.py --data-dir ./data/knowledge_base
     profiles:
       - tools  # Only run when explicitly called
 

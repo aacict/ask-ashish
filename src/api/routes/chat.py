@@ -7,6 +7,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
+from starlette.requests import Request
 
 from src.models.schemas import ChatRequest, ChatResponse, ErrorResponse
 from src.services.chat_service import get_chat_service, ChatService
@@ -31,7 +32,8 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 )
 @limiter.limit(get_rate_limit_string())
 async def ask_question(
-    request: ChatRequest,
+    request: Request,
+    chatRequest: ChatRequest,
     chat_service: ChatService = Depends(get_chat_service),
     _: str = Depends(verify_api_key)
 ) -> ChatResponse:
@@ -43,8 +45,8 @@ async def ask_question(
     - **stream**: Whether to stream the response (not used in this endpoint)
     """
     try:
-        logger.info(f"Received question: {request.question[:100]}")
-        response = await chat_service.ask_question(request)
+        logger.info(f"Received question: {chatRequest.question[:100]}")
+        response = await chat_service.ask_question(chatRequest)
         return response
         
     except Exception as e:
@@ -64,7 +66,8 @@ async def ask_question(
 )
 @limiter.limit(get_rate_limit_string())
 async def ask_question_stream(
-    request: ChatRequest,
+    request: Request,
+    chatRequest: ChatRequest,
     chat_service: ChatService = Depends(get_chat_service),
     _: str = Depends(verify_api_key)
 ) -> StreamingResponse:

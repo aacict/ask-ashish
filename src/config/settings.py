@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     
     # OpenAI
     openai_api_key: str  # Your OpenAI API key
-    openai_model: str = "gpt-4-turbo-preview"
+    openai_model: str = "gpt-4-0125-preview"
     embedding_model: str = "text-embedding-3-small"  # OpenAI embedding model
     
     # Vector Store

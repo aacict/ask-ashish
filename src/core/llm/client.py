@@ -58,7 +58,8 @@ class LLMClient:
     async def generate_answer(
         self,
         question: str,
-        context_sources: list[tuple[str, dict, float]]
+        context_sources: list[tuple[str, dict, float]],
+        conversation_history: Optional[list[dict]] = None
     ) -> tuple[str, dict]:
         """
         Generate an answer using the RAG approach
