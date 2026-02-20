@@ -1,6 +1,7 @@
 """
 Main FastAPI Application
 """
+import asyncio
 import logging
 import sys
 from contextlib import asynccontextmanager
@@ -9,9 +10,9 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
-from scripts import ingest_data
 from slowapi.errors import RateLimitExceeded
 
+from scripts.ingest_data import ingest_data
 from src.config.settings import get_settings
 from src.api.routes import chat, health
 from src.core.security.auth import limiter, rate_limit_exceeded_handler
@@ -52,7 +53,7 @@ async def lifespan(app: FastAPI):
 
         if stats.get("count", 0) == 0:
             logger.info("Vector store empty. Starting ingestion...")
-            await ingest_data("data/knowledge_base")
+            await ingest_data("./data/knowledge_base")
             logger.info("Ingestion complete.")
         else:
             logger.info(f"Vector store already initialized with {stats['count']} chunks.")
