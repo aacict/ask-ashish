@@ -10,6 +10,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 from slowapi.errors import RateLimitExceeded
 
 from scripts.ingest_data import ingest_data
@@ -110,15 +111,19 @@ async def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """Global exception handler"""
-    logger.error(f"Unhandled exception: {exc}", exc_info=True)
-    
+    # Build the error response model
+    error_content = ErrorResponse(
+        error="InternalServerError",
+        message="An unexpected error occurred",
+        detail=str(exc) if settings.debug else None
+    )
+
+    # Encode the model to JSON-safe format
+    safe_content = jsonable_encoder(error_content)
+
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content=ErrorResponse(
-            error="InternalServerError",
-            message="An unexpected error occurred",
-            detail=str(exc) if settings.debug else None
-        ).model_dump()
+        content=safe_content
     )
 
 

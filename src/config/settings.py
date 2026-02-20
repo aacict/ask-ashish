@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     retrieval_top_k: int = 4  # Number of documents to retrieve
 
     redis_url: str   # Redis URL for rate limiting
-    rate_limit_enabled: bool = True  # Enable rate limiting
+    rate_limit_enabled: bool = False  # Enable rate limiting
     rate_limit_per_minute: int = 60  # Max requests per minute
 
     log_level: str = "INFO"  # Logging level
